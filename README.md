@@ -1,2 +1,2 @@
 # dotfiles_QMK_files
-vim/spacemacs dotfiles and QMK keyboard layout files
+emacs dotfiles and QMK keyboard layout files
