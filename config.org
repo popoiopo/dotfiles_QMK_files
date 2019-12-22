@@ -54,40 +54,44 @@
 * Basic improvements
 ** Basics
 #+BEGIN_SRC emacs-lisp
-  (setq scroll-conservatively 100)    ;; Keep from making huge jumps
-  (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
-  (setq visible-bell 1)               ;; disable annoying windows sound
-  (setq inhibit-startup-message t)    ;; Hide the startup message
-  (setq-default display-line-numbers 'relative)
-  (use-package page-break-lines
-    :ensure t
-    :init
-    (turn-on-page-break-lines-mode))
-  (setq electric-pair-pairs '(
-                              (?\( . ?\))
-                              (?\[ . ?\])
-                              (?\" . ?\")
-                              (?\{ . ?\})
-                              ))
-  (electric-pair-mode t)
+      (setq scroll-conservatively 100)    ;; Keep from making huge jumps
+      (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
+      (setq visible-bell 1)               ;; disable annoying windows sound
+      (setq inhibit-startup-message t)    ;; Hide the startup message
+      (setq-default display-line-numbers 'relative)
+      (use-package ivy
+        :ensure t)
+      (use-package try
+        :ensure t)
+      (use-package page-break-lines
+        :ensure t
+        :init
+        (turn-on-page-break-lines-mode))
+      (setq electric-pair-pairs '(
+                                  (?\( . ?\))
+                                  (?\[ . ?\])
+                                  (?\" . ?\")
+                                  (?\{ . ?\})
+                                  ))
+      (electric-pair-mode t)
 
-  (tool-bar-mode -1)                  ;; Get rid of tool-bar
-  (menu-bar-mode -1)                  ;; Git rid of menu
-  (scroll-bar-mode -1)                ;; Get rid of scroll-bar
+      (tool-bar-mode -1)                  ;; Get rid of tool-bar
+      (menu-bar-mode -1)                  ;; Git rid of menu
+      (scroll-bar-mode -1)                ;; Get rid of scroll-bar
 
-  (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+      (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
 
-  (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
+      (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
 
-  (use-package beacon
-    :ensure t
-    :init
-    (beacon-mode 1))                  ;; Enable small light to show where current frame is
+      (use-package beacon
+        :ensure t
+        :init
+        (beacon-mode 1))                  ;; Enable small light to show where current frame is
 
-  (use-package which-key
-    :ensure t
-    :init
-    (which-key-mode))                 ;; Upon C-x get a list of possible options
+      (use-package which-key
+        :ensure t
+        :init
+        (which-key-mode))                 ;; Upon C-x get a list of possible options
 #+END_SRC
 
 ** subword
@@ -131,9 +135,9 @@
 #+BEGIN_SRC emacs-lisp
   (setq org-src-window-setup 'current-window)
   (add-to-list 'org-structure-template-alist
-	       '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
+               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
   (add-to-list 'org-structure-template-alist
-	       '("py" "#+BEGIN_SRC python\n?\n#+END_SRC"))
+               '("py" "#+BEGIN_SRC python\n?\n#+END_SRC"))
 
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -438,9 +442,31 @@ mx ido emulator
 * swiper
 Somethings wrong, but usefull if ever fixed
 #+BEGIN_SRC emacs-lisp
- ; (use-package swiper
- ;   :ensure t
- ;   :bind ("C-r" . swiper))
+  ;; it looks like counsel is a requirement for swiper
+  (use-package counsel
+  :ensure t
+  )
+
+  (use-package swiper
+  :ensure try
+  :config
+  (progn
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> l") 'counsel-load-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  ))
 #+END_SRC
 
 * mark-multiple
@@ -452,4 +478,18 @@ Somethings wrong, but usefull if ever fixed
   (use-package expand-region
     :ensure t
     :bind ("C-q" . er/expand-region))
+#+END_SRC
+
+* yassnippet
+
+** Loading yassnippet
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config (use-package yasnippet-snippets
+              :ensure t)
+    (yas-reload-all))
+
+  (add-hook 'Emacs-lisp-mode 'yas-minor-mode)
+
 #+END_SRC

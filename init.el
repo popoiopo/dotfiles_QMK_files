@@ -36,19 +36,16 @@
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(column-number-mode t)
- '(custom-enabled-themes (quote (spacemacs-dark)))
+ '(custom-enabled-themes '(spacemacs-dark))
  '(custom-safe-themes
-   (quote
-    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
+   '("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))
  '(fci-rule-color "#37474f")
  '(hl-sexp-background-color "#1c1f26")
  '(package-selected-packages
-   (quote
-    (pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults)))
+   '(counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
-   (quote
-    ((20 . "#f36c60")
+   '((20 . "#f36c60")
      (40 . "#ff9800")
      (60 . "#fff59d")
      (80 . "#8bc34a")
@@ -65,7 +62,7 @@
      (300 . "#f36c60")
      (320 . "#ff9800")
      (340 . "#fff59d")
-     (360 . "#8bc34a"))))
+     (360 . "#8bc34a")))
  '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
