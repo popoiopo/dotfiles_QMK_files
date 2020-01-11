@@ -1,102 +1,112 @@
-
+#+STARTIP: overview
 * Python
 
 #+BEGIN_SRC emacs-lisp
-;; If there are no archived package contents, refresh them
-(when (not package-archive-contents)
-  (package-refresh-contents))
+    ; If there are no archived package contents, refresh them
+    (when (not package-archive-contents)
+      (package-refresh-contents))
 
-;; Installs packages
-;;
-;; myPackages contains a list of package names
-(defvar myPackages
-  '(better-defaults                 ;; Set up some better Emacs defaults
-    elpy                            ;; Emacs Lisp Python Environment
-    flycheck                        ;; On the fly syntax checking
-    py-autopep8                     ;; Run autopep8 on save
-    blacken                         ;; Black formatting on safe (kind of autopep8)
-    magit                           ;; Git integration
-    ein                             ;; Emacs IPython Notebook
-    )
-  )
+    ;; Installs packages
+    ;;
+    ;; myPackages contains a list of package names
+    (defvar myPackages
+      '(better-defaults                 ;; Set up some better Emacs defaults
+        elpy                            ;; Emacs Lisp Python Environment
+        flycheck                        ;; On the fly syntax checking
+        py-autopep8                     ;; Run autopep8 on save
+        blacken                         ;; Black formatting on safe (kind of autopep8)
+        magit                           ;; Git integration
+        ein                             ;; Emacs IPython Notebook
+        jedi
+        )
+      )
 
-;; Scans the list in myPackages
-;; If the package listed is not already installed, install it
-(mapc #'(lambda (package)
-          (unless (package-installed-p package)
-            (package-install package)))
-      myPackages)
+    ;; Scans the list in myPackages
+    ;; If the package listed is not already installed, install it
+    (mapc #'(lambda (package)
+              (unless (package-installed-p package)
+                (package-install package)))
+          myPackages)
 
-;; ====================================
-;; Development Setup
-;; ====================================
-;; Enable elpy
-(elpy-enable)
+    ;; ====================================
+    ;; Development Setup
+    ;; ====================================
+    (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (with-eval-after-load 'python
+        '(let ((python-shell-completion-native-enable t)
+             (python-shell-completion-native-output-timeout
+              python-shell-completion-native-try-output-timeout))
+         (python-shell-completion-native-get-completions
+          (get-buffer-process (current-buffer))
+          nil "_"))))
+ 
+    (use-package elpy
+      :ensure t
+      :config
+      (elpy-enable))
 
-;; Use IPython for REPL
-(setq python-shell-interpreter "jupyter"
-      python-shell-interpreter-args "console --simple-prompt"
-      python-shell-prompt-detect-failure-warning nil)
-(add-to-list 'python-shell-completion-native-disabled-interpreters
-             "jupyter")
+    ;; Enable Flycheck
+    (when (load "flycheck" t t)
+      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+      (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-;; Enable Flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+    (use-package jedi
+      :ensure t
+      :init
+      (add-hook 'elpy-mode-hook 'jedi:setup)
+      (add-hook 'elpy-mode-hook 'jedi:ac-setup))
 
-;; Enable autopep8
-(require 'py-autopep8)
-(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-
+    ;; Enable autopep8
+    (require 'py-autopep8)
+    (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
 #+END_SRC
 
 * Basic improvements
 ** Basics
 #+BEGIN_SRC emacs-lisp
-      (setq scroll-conservatively 100)    ;; Keep from making huge jumps
-      (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
-      (setq visible-bell 1)               ;; disable annoying windows sound
-      (setq inhibit-startup-message t)    ;; Hide the startup message
-      (setq-default display-line-numbers 'relative)
-      (use-package ivy
-        :ensure t)
-      (use-package try
-        :ensure t)
-      (use-package page-break-lines
-        :ensure t
-        :init
-        (turn-on-page-break-lines-mode))
-      (setq electric-pair-pairs '(
-                                  (?\( . ?\))
-                                  (?\[ . ?\])
-                                  (?\" . ?\")
-                                  (?\{ . ?\})
-                                  ))
-      (electric-pair-mode t)
+  (setq scroll-conservatively 100)    ;; Keep from making huge jumps
+  (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
+  (setq visible-bell 1)               ;; disable annoying windows sound
+  (setq inhibit-startup-message t)    ;; Hide the startup message
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+  (setq-default display-line-numbers 'relative)
+  (global-auto-revert-mode t)
+  (use-package try
+    :ensure t)
+  (use-package page-break-lines
+    :ensure t
+    :init
+    (turn-on-page-break-lines-mode))
+  (setq electric-pair-pairs '(
+                              (?\( . ?\))
+                              (?\[ . ?\])
+                              (?\" . ?\")
+                              (?\{ . ?\})
+                              ))
+  (electric-pair-mode t)
 
-      (tool-bar-mode -1)                  ;; Get rid of tool-bar
-      (menu-bar-mode -1)                  ;; Git rid of menu
-      (scroll-bar-mode -1)                ;; Get rid of scroll-bar
+  (tool-bar-mode -1)                  ;; Get rid of tool-bar
+  (menu-bar-mode -1)                  ;; Git rid of menu
+  (scroll-bar-mode -1)                ;; Get rid of scroll-bar
 
-      (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+  (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
 
-      (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
+  (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
 
-      (use-package beacon
-        :ensure t
-        :init
-        (beacon-mode 1))                  ;; Enable small light to show where current frame is
+  (use-package beacon
+    :ensure t
+    :init
+    (beacon-mode 1))                  ;; Enable small light to show where current frame is
 
-      (use-package which-key
-        :ensure t
-        :init
-        (which-key-mode))                 ;; Upon C-x get a list of possible options
+  (use-package which-key
+    :ensure t
+    :init
+    (which-key-mode))                 ;; Upon C-x get a list of possible options
 #+END_SRC
 
 ** subword
 #+BEGIN_SRC emacs-lisp
-
 (global-subword-mode 1)
 #+END_SRC
 
@@ -113,14 +123,6 @@
     :bind ("M-y" . popup-kill-ring))
 #+END_SRC
 
-** pretty-mode
-#+BEGIN_SRC emacs-lisp
-  (when window-system
-    (use-package pretty-mode
-      :ensure t
-      :config
-      (add-hook 'prog-mode-hook 'pretty-mode)))
-#+END_SRC
 * Org
 
 ** Org-bullets
@@ -133,6 +135,7 @@
 
 ** basic-config
 #+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook '(lambda () (visual-line-mode 1)))
   (setq org-src-window-setup 'current-window)
   (add-to-list 'org-structure-template-alist
                '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
@@ -142,6 +145,8 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((python . t)))
+
+  (setq org-agenda-files (quote ("c:/Users/chatel/Desktop/ORG/test.org")))
 #+END_SRC
 
 ** org-indent
@@ -439,36 +444,6 @@ mx ido emulator
     ("s-h" . symon-mode))
 #+END_SRC
 
-* swiper
-Somethings wrong, but usefull if ever fixed
-#+BEGIN_SRC emacs-lisp
-  ;; it looks like counsel is a requirement for swiper
-  (use-package counsel
-  :ensure t
-  )
-
-  (use-package swiper
-  :ensure try
-  :config
-  (progn
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (global-set-key "\C-s" 'swiper)
-  (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (global-set-key (kbd "<f6>") 'ivy-resume)
-  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  (global-set-key (kbd "<f1> l") 'counsel-load-library)
-  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-x l") 'counsel-locate)
-  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-  ))
-#+END_SRC
-
 * mark-multiple
 #+BEGIN_SRC emacs-lisp
   (use-package mark-multiple
@@ -490,6 +465,114 @@ Somethings wrong, but usefull if ever fixed
               :ensure t)
     (yas-reload-all))
 
-  (add-hook 'Emacs-lisp-mode 'yas-minor-mode)
+  (yas-global-mode 1)
 
+#+END_SRC
+
+* swiper/counsel/ivy
+#+BEGIN_SRC emacs-lisp
+  ;; it looks like counsel is a requirement for swiper
+  (use-package counsel
+  :ensure t
+  )
+
+  (use-package counsel
+    :bind (("M-y" . counsel-yank-pop)
+           :map ivy-minibuffer-map
+           ("M-y" . ivy-next-line)))
+
+  (use-package swiper
+  :ensure try
+  :config
+  (progn
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> l") 'counsel-load-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+  ))
+#+END_SRC
+
+* Reveal.js
+#+BEGIN_SRC emacs-lisp
+(use-package ox-reveal
+:ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
+
+(use-package htmlize
+:ensure t)
+#+END_SRC
+
+* ESS
+#+BEGIN_SRC emacs-lisp
+  (setq inferior-ess-r-program "c:/Program Files/R/R-3.6.2/bin/R.exe")
+  (require 'ess-smart-underscore)
+#+END_SRC
+
+* Narrowing
+#+BEGIN_SRC emacs-lisp
+  (defun narrow-or-widen-dwim (p)
+    "Widen if buffer is narrowed, narrow-dwim otherwise.
+  Dwim means: region, org-src-block, org-subtree, or
+  defun, whichever applies first. Narrowing to
+  org-src-block actually calls `org-edit-src-code'.
+
+  With prefix P, don't widen, just narrow even if buffer
+  is already narrowed."
+    (interactive "P")
+    (declare (interactive-only))
+    (cond ((and (buffer-narrowed-p) (not p)) (widen))
+          ((region-active-p)
+           (narrow-to-region (region-beginning)
+                             (region-end)))
+          ((derived-mode-p 'org-mode)
+           ;; `org-edit-src-code' is not a real narrowing
+           ;; command. Remove this first conditional if
+           ;; you don't want it.
+           (cond ((ignore-errors (org-edit-src-code) t)
+                  (delete-other-windows))
+                 ((ignore-errors (org-narrow-to-block) t))
+                 (t (org-narrow-to-subtree))))
+          ((derived-mode-p 'latex-mode)
+           (LaTeX-narrow-to-environment))
+          (t (narrow-to-defun))))
+
+  (define-key ctl-x-map "n" #'narrow-or-widen-dwim)
+#+END_SRC
+
+* Web mode / emmet
+#+BEGIN_SRC emacs-lisp
+  (use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (setq web-mode-engines-alist
+  '(("django"    . "\\.html\\'")))
+  (setq web-mode-ac-sources-alist
+  '(("css" . (ac-source-css-property))
+  ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+
+  (use-package emmet-mode
+  :ensure t
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+  )
 #+END_SRC
